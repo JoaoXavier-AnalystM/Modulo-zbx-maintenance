@@ -1,0 +1,197 @@
+# Maintenance Plus - English (US) locale
+# PO file template for gettext
+
+msgid ""
+msgstr ""
+"Project-Id-Version: Maintenance Plus 1.0.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-05-07\n"
+"PO-Revision-Date: 2026-05-07\n"
+"Last-Translator: \n"
+"Language: en_US\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "Maintenance Plus"
+msgstr "Maintenance Plus"
+
+msgid "New Maintenance"
+msgstr "New Maintenance"
+
+msgid "All Maintenances"
+msgstr "All Maintenances"
+
+msgid "Active Now"
+msgstr "Active Now"
+
+msgid "Upcoming"
+msgstr "Upcoming"
+
+msgid "Total"
+msgstr "Total"
+
+msgid "Maintenance Calendar"
+msgstr "Maintenance Calendar"
+
+msgid "Active Maintenances"
+msgstr "Active Maintenances"
+
+msgid "Upcoming Maintenances"
+msgstr "Upcoming Maintenances"
+
+msgid "No active maintenances right now."
+msgstr "No active maintenances right now."
+
+msgid "No upcoming maintenances scheduled."
+msgstr "No upcoming maintenances scheduled."
+
+msgid "Create Maintenance"
+msgstr "Create Maintenance"
+
+msgid "Edit Maintenance"
+msgstr "Edit Maintenance"
+
+msgid "General"
+msgstr "General"
+
+msgid "Name"
+msgstr "Name"
+
+msgid "Description"
+msgstr "Description"
+
+msgid "Schedule"
+msgstr "Schedule"
+
+msgid "Active since"
+msgstr "Active since"
+
+msgid "Active till"
+msgstr "Active till"
+
+msgid "Period (seconds)"
+msgstr "Period (seconds)"
+
+msgid "Host Selection via Tags"
+msgstr "Host Selection via Tags"
+
+msgid "Recommended"
+msgstr "Recommended"
+
+msgid "Tag match"
+msgstr "Tag match"
+
+msgid "AND (all tags must match)"
+msgstr "AND (all tags must match)"
+
+msgid "OR (any tag matches)"
+msgstr "OR (any tag matches)"
+
+msgid "Type to search tags..."
+msgstr "Type to search tags..."
+
+msgid "Add manually"
+msgstr "Add manually"
+
+msgid "No tags selected. Type above to add tags."
+msgstr "No tags selected. Type above to add tags."
+
+msgid "Manual Host / Group Selection"
+msgstr "Manual Host / Group Selection"
+
+msgid "optional"
+msgstr "optional"
+
+msgid "Generate name automatically"
+msgstr "Generate name automatically"
+
+msgid "Affected Hosts Preview"
+msgstr "Affected Hosts Preview"
+
+msgid "Templates"
+msgstr "Templates"
+
+msgid "Save as Template"
+msgstr "Save as Template"
+
+msgid "Template name"
+msgstr "Template name"
+
+msgid "Template saved."
+msgstr "Template saved."
+
+msgid "Template deleted."
+msgstr "Template deleted."
+
+msgid "Template not found."
+msgstr "Template not found."
+
+msgid "Maintenance created successfully."
+msgstr "Maintenance created successfully."
+
+msgid "Maintenance updated successfully."
+msgstr "Maintenance updated successfully."
+
+msgid "Confirm Delete"
+msgstr "Confirm Delete"
+
+msgid "Delete"
+msgstr "Delete"
+
+msgid "Cancel"
+msgstr "Cancel"
+
+msgid "Update"
+msgstr "Update"
+
+msgid "Create"
+msgstr "Create"
+
+msgid "Search maintenances..."
+msgstr "Search maintenances..."
+
+msgid "All"
+msgstr "All"
+
+msgid "Active"
+msgstr "Active"
+
+msgid "Expired"
+msgstr "Expired"
+
+msgid "Status"
+msgstr "Status"
+
+msgid "Type"
+msgstr "Type"
+
+msgid "Hosts"
+msgstr "Hosts"
+
+msgid "Actions"
+msgstr "Actions"
+
+msgid "Start"
+msgstr "Start"
+
+msgid "End"
+msgstr "End"
+
+msgid "With data collection"
+msgstr "With data collection"
+
+msgid "No data collection"
+msgstr "No data collection"
+
+msgid "Load more"
+msgstr "Load more"
+
+msgid "Delete selected"
+msgstr "Delete selected"
+
+msgid "No maintenances found."
+msgstr "No maintenances found."
+
+msgid "Add tags above to preview affected hosts."
+msgstr "Add tags above to preview affected hosts."

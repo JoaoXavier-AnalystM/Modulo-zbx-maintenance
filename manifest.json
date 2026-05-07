@@ -1,0 +1,73 @@
+{
+    "manifest_version": 2,
+    "id": "maintenance_plus",
+    "name": "Maintenance Plus",
+    "version": "1.0.0",
+    "namespace": "MaintenancePlus",
+    "author": "JX",
+    "url": "",
+    "description": "Modern maintenance management for Zabbix with tag-based host selection, templates, calendar view and approval workflows.",
+    "actions": {
+        "maintenance.plus.dashboard": {
+            "class": "MaintenancePlusDashboard",
+            "layout": "layout.htmlpage",
+            "view": "maintenance.plus.dashboard"
+        },
+        "maintenance.plus.list": {
+            "class": "MaintenancePlusList",
+            "layout": "layout.htmlpage",
+            "view": "maintenance.plus.list"
+        },
+        "maintenance.plus.create": {
+            "class": "MaintenancePlusCreate",
+            "layout": "layout.htmlpage",
+            "view": "maintenance.plus.form"
+        },
+        "maintenance.plus.edit": {
+            "class": "MaintenancePlusEdit",
+            "layout": "layout.htmlpage",
+            "view": "maintenance.plus.form"
+        },
+        "maintenance.plus.delete": {
+            "class": "MaintenancePlusDelete",
+            "layout": "layout.json"
+        },
+        "maintenance.plus.api.tags": {
+            "class": "MaintenancePlusApiTags",
+            "layout": "layout.json"
+        },
+        "maintenance.plus.api.hosts": {
+            "class": "MaintenancePlusApiHosts",
+            "layout": "layout.json"
+        },
+        "maintenance.plus.api.preview": {
+            "class": "MaintenancePlusApiPreview",
+            "layout": "layout.json"
+        },
+        "maintenance.plus.templates.list": {
+            "class": "MaintenancePlusTemplatesList",
+            "layout": "layout.json"
+        },
+        "maintenance.plus.templates.save": {
+            "class": "MaintenancePlusTemplatesSave",
+            "layout": "layout.json"
+        },
+        "maintenance.plus.templates.delete": {
+            "class": "MaintenancePlusTemplatesDelete",
+            "layout": "layout.json"
+        },
+        "maintenance.plus.export": {
+            "class": "MaintenancePlusExport",
+            "layout": "layout.json"
+        }
+    },
+    "assets": {
+        "css": [
+            "maintenance-plus.css"
+        ],
+        "js": [
+            "maintenance-plus-app.js",
+            "calendar-view.js"
+        ]
+    }
+}
