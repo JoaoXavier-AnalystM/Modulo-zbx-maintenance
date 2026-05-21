@@ -1,47 +1,54 @@
 /*
  * Maintenance Plus — CSS
- * Supports Zabbix light and dark themes via CSS custom properties.
+ * Inherits Zabbix 7.4 native theme. Component tokens extend Zabbix design system.
+ * Dark mode: [data-theme="dark"] (Zabbix 7.4 standard).
  */
 
 /* ── Theme tokens ──────────────────────────────────────────────────────────── */
 :root {
-    --mp-bg:            #f4f5f7;
+    /* Backgrounds — inherit Zabbix chrome, define only card/input surfaces */
     --mp-bg-card:       #ffffff;
     --mp-bg-card-alt:   #f8f9fa;
     --mp-bg-input:      #ffffff;
     --mp-bg-hover:      #f0f2f5;
+    /* Borders */
     --mp-border:        #dde1e7;
-    --mp-border-focus:  #4a90d9;
+    --mp-border-focus:  #1c6ab1;
+    /* Text — aligned to Zabbix palette */
     --mp-text:          #1a1d23;
     --mp-text-muted:    #6b7280;
-    --mp-text-link:     #2563eb;
+    --mp-text-link:     #1c6ab1;
+    /* Radius */
     --mp-radius:        8px;
     --mp-radius-sm:     4px;
     --mp-radius-lg:     12px;
+    /* Shadows */
     --mp-shadow:        0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.05);
     --mp-shadow-md:     0 4px 12px rgba(0,0,0,.1);
     --mp-shadow-lg:     0 10px 30px rgba(0,0,0,.15);
-    --mp-primary:       #2563eb;
-    --mp-primary-hover: #1d4ed8;
-    --mp-primary-light: #dbeafe;
+    /* Brand / semantic — aligned to Zabbix 7.4 blue */
+    --mp-primary:       #1c6ab1;
+    --mp-primary-hover: #165a9e;
+    --mp-primary-light: #e8f0f8;
     --mp-danger:        #dc2626;
     --mp-danger-light:  #fee2e2;
     --mp-success:       #16a34a;
     --mp-success-light: #dcfce7;
     --mp-warning:       #d97706;
     --mp-warning-light: #fef3c7;
-    --mp-status-active: #16a34a;
-    --mp-status-upcoming: #2563eb;
+    /* Status */
+    --mp-status-active:   #16a34a;
+    --mp-status-upcoming: #1c6ab1;
     --mp-status-expired:  #6b7280;
+    /* Component-specific */
     --mp-tag-bg:        #eff6ff;
     --mp-tag-border:    #93c5fd;
     --mp-tag-text:      #1e40af;
     --mp-transition:    140ms ease;
-    --mp-font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-body.dark-theme, [data-theme="dark"] {
-    --mp-bg:            #0f1117;
+/* Zabbix 7.4 dark theme */
+[data-theme="dark"] {
     --mp-bg-card:       #1a1d26;
     --mp-bg-card-alt:   #1f2230;
     --mp-bg-input:      #252837;
@@ -59,18 +66,37 @@ body.dark-theme, [data-theme="dark"] {
     --mp-success-light: #14291e;
     --mp-warning-light: #2e200a;
     --mp-tag-bg:        #1e2f4d;
-    --mp-tag-border:    #2563eb;
+    --mp-tag-border:    #1c6ab1;
     --mp-tag-text:      #93c5fd;
 }
 
-/* ── Base ──────────────────────────────────────────────────────────────────── */
+/* Fallback dark mode (older Zabbix or custom themes) */
+body.dark-theme {
+    --mp-bg-card:       #1a1d26;
+    --mp-bg-card-alt:   #1f2230;
+    --mp-bg-input:      #252837;
+    --mp-bg-hover:      #252837;
+    --mp-border:        #2e3347;
+    --mp-border-focus:  #60a5fa;
+    --mp-text:          #e2e8f0;
+    --mp-text-muted:    #94a3b8;
+    --mp-text-link:     #60a5fa;
+    --mp-shadow:        0 1px 3px rgba(0,0,0,.4);
+    --mp-shadow-md:     0 4px 12px rgba(0,0,0,.5);
+    --mp-shadow-lg:     0 10px 30px rgba(0,0,0,.6);
+    --mp-primary-light: #1e3a5f;
+    --mp-danger-light:  #3b1a1a;
+    --mp-success-light: #14291e;
+    --mp-warning-light: #2e200a;
+    --mp-tag-bg:        #1e2f4d;
+    --mp-tag-border:    #1c6ab1;
+    --mp-tag-text:      #93c5fd;
+}
+
+/* ── Base — inherits Zabbix page chrome ─────────────────────────────────────── */
 .mp-page {
-    font-family: var(--mp-font);
-    color:       var(--mp-text);
-    background:  var(--mp-bg);
-    min-height:  100vh;
-    padding:     24px;
-    box-sizing:  border-box;
+    color: var(--mp-text);
+    /* background and font-family inherited from Zabbix .article / body */
 }
 
 .mp-page-header {
@@ -169,7 +195,7 @@ body.dark-theme, [data-theme="dark"] {
 .mp-search-box { position: relative; flex: 1; max-width: 340px; min-width: 180px; }
 .mp-search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; color: var(--mp-text-muted); }
 .mp-search-input { width: 100%; padding: 8px 12px 8px 36px; border: 1px solid var(--mp-border); border-radius: var(--mp-radius-sm); background: var(--mp-bg-input); color: var(--mp-text); font-size: .875rem; outline: none; transition: border-color var(--mp-transition); box-sizing: border-box; }
-.mp-search-input:focus { border-color: var(--mp-border-focus); box-shadow: 0 0 0 3px rgba(74,144,217,.15); }
+.mp-search-input:focus { border-color: var(--mp-border-focus); box-shadow: 0 0 0 3px rgba(28,106,177,.15); }
 .mp-filter-tabs { display: flex; gap: 2px; background: var(--mp-bg-card-alt); border: 1px solid var(--mp-border); border-radius: var(--mp-radius-sm); padding: 2px; }
 .mp-filter-tab { padding: 5px 14px; border-radius: calc(var(--mp-radius-sm) - 2px); font-size: .82rem; font-weight: 500; color: var(--mp-text-muted); cursor: pointer; transition: background var(--mp-transition), color var(--mp-transition); }
 .mp-filter-tab input { display: none; }
@@ -240,8 +266,8 @@ body.dark-theme, [data-theme="dark"] {
 .mp-label { font-size: .83rem; font-weight: 600; color: var(--mp-text); }
 .mp-required { color: var(--mp-danger); }
 .mp-field-hint { font-size: .78rem; color: var(--mp-text-muted); margin: 0 0 12px; }
-.mp-input, .mp-textarea { padding: 9px 12px; border: 1px solid var(--mp-border); border-radius: var(--mp-radius-sm); background: var(--mp-bg-input); color: var(--mp-text); font-size: .875rem; font-family: var(--mp-font); outline: none; transition: border-color var(--mp-transition); width: 100%; box-sizing: border-box; }
-.mp-input:focus, .mp-textarea:focus { border-color: var(--mp-border-focus); box-shadow: 0 0 0 3px rgba(74,144,217,.15); }
+.mp-input, .mp-textarea { padding: 9px 12px; border: 1px solid var(--mp-border); border-radius: var(--mp-radius-sm); background: var(--mp-bg-input); color: var(--mp-text); font-size: .875rem; outline: none; transition: border-color var(--mp-transition); width: 100%; box-sizing: border-box; }
+.mp-input:focus, .mp-textarea:focus { border-color: var(--mp-border-focus); box-shadow: 0 0 0 3px rgba(28,106,177,.15); }
 .mp-input-error { border-color: var(--mp-danger) !important; }
 .mp-input[readonly] { background: var(--mp-bg-card-alt); cursor: default; }
 .mp-input-sm { width: 120px; }
@@ -387,7 +413,6 @@ body.dark-theme, [data-theme="dark"] {
 
 /* ── Responsive refinements ────────────────────────────────────────────────── */
 @media (max-width: 768px) {
-    .mp-page { padding: 16px; }
     .mp-page-header { flex-direction: column; align-items: flex-start; }
     .mp-page-title h1 { font-size: 1.3rem; }
     .mp-stats-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
@@ -415,7 +440,6 @@ body.dark-theme, [data-theme="dark"] {
     .mp-page-header, .mp-toolbar, .mp-breadcrumb, .mp-form-sidebar,
     .mp-td-actions, .mp-td-check, .mp-th-check, .mp-load-more-bar,
     .mp-page-actions, .mp-form-actions, #mp-toast-container { display: none !important; }
-    .mp-page { background: #fff; padding: 0; }
     .mp-card { box-shadow: none; border: 1px solid #ddd; break-inside: avoid; }
     .mp-table { font-size: .75rem; }
 }
