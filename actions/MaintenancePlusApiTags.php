@@ -20,8 +20,9 @@ class MaintenancePlusApiTags extends CController {
 
     protected function checkInput(): bool {
         $fields = [
-            'search' => 'string',
-            'limit'  => 'ge 1|le 200',
+            'search'  => 'string',
+            'limit'   => 'ge 1|le 200',
+            'hostids' => 'array',
         ];
 
         $ret = $this->validateInput($fields);
@@ -40,11 +41,12 @@ class MaintenancePlusApiTags extends CController {
     }
 
     protected function doAction(): void {
-        $search = $this->getInput('search', '');
-        $limit  = (int) $this->getInput('limit', 50);
+        $search  = $this->getInput('search', '');
+        $limit   = (int) $this->getInput('limit', 50);
+        $hostids = $this->getInput('hostids', []);
 
         $svc  = CMaintenancePlusService::getInstance();
-        $tags = $svc->getAvailableTags($search, $limit);
+        $tags = $svc->getAvailableTags($search, $limit, $hostids ?: null);
 
         $this->setResponse(new CControllerResponseData([
             'main_block' => json_encode([

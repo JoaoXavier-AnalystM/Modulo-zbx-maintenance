@@ -93,12 +93,14 @@ class CMaintenancePlusService {
     // ── Tag-based host resolution ─────────────────────────────────────────────
 
     /**
-     * Returns all monitored hosts whose tags match the given filter.
+     * Returns monitored hosts whose tags match the given filter.
+     * Optionally restrict to a subset of host IDs.
      *
-     * @param array  $tags     [['name' => ..., 'value' => ..., 'operator' => ...], ...]
-     * @param string $evalType 'and' | 'or'
+     * @param array      $tags     [['name' => ..., 'value' => ..., 'operator' => ...], ...]
+     * @param string     $evalType 'and' | 'or'
+     * @param array|null $hostids  Optional — only match within these hosts
      */
-    public function getHostsByTags(array $tags, string $evalType = 'and'): array {
+    public function getHostsByTags(array $tags, string $evalType = 'and', ?array $hostids = null): array {
         if (empty($tags)) {
             return [];
         }
@@ -113,7 +115,7 @@ class CMaintenancePlusService {
             $zbxTags[] = $entry;
         }
 
-        $result = API::Host()->get([
+        $params = [
             'output'          => ['hostid', 'name', 'status'],
             'selectGroups'    => ['groupid', 'name'],
             'selectTags'      => 'extend',
@@ -121,47 +123,80 @@ class CMaintenancePlusService {
             'evaltype'        => ($evalType === 'or') ? TAG_EVAL_TYPE_OR : TAG_EVAL_TYPE_AND_OR,
             'monitored_hosts' => true,
             'sortfield'       => 'name',
-        ]);
+        ];
+
+        if ($hostids !== null) {
+            $params['hostids'] = $hostids;
+        }
+
+        $result = API::Host()->get($params);
 
         return is_array($result) ? $result : [];
     }
 
     /**
-     * Returns deduplicated tag name/value pairs used across monitored hosts.
+     * Returns deduplicated tag name/value pairs from host tags AND item tags.
+     * When hostids provided, also searches item-level tags from those hosts.
      * Powers the autocomplete in the tag selector.
      */
-    public function getAvailableTags(string $search = '', int $limit = 50): array {
-        $params = [
+    public function getAvailableTags(string $search = '', int $limit = 50, ?array $hostids = null): array {
+        $seen = [];
+        $tags = [];
+
+        // 1) Host-level tags
+        $hostParams = [
             'output'          => [],
             'selectTags'      => ['tag', 'value'],
             'monitored_hosts' => true,
             'limit'           => 5000,
         ];
 
-        $hosts = API::Host()->get($params);
-
-        if (!is_array($hosts)) {
-            return [];
+        if ($hostids !== null) {
+            $hostParams['hostids'] = $hostids;
         }
 
-        $seen = [];
-        $tags = [];
+        $hosts = API::Host()->get($hostParams);
 
-        foreach ($hosts as $host) {
-            foreach (($host['tags'] ?? []) as $t) {
-                $key = $t['tag'] . '=' . $t['value'];
+        if (is_array($hosts)) {
+            foreach ($hosts as $host) {
+                foreach (($host['tags'] ?? []) as $t) {
+                    $key = $t['tag'] . '=' . $t['value'];
+                    if (isset($seen[$key])) continue;
+                    $seen[$key] = true;
 
-                if (isset($seen[$key])) {
-                    continue;
+                    if ($search === ''
+                        || stripos($t['tag'], $search) !== false
+                        || stripos($t['value'], $search) !== false
+                    ) {
+                        $tags[] = ['name' => $t['tag'], 'value' => $t['value']];
+                    }
                 }
+            }
+        }
 
-                $seen[$key] = true;
+        // 2) Item-level tags — only when hostids provided (expensive call)
+        if ($hostids !== null && !empty($hostids)) {
+            $items = API::Item()->get([
+                'output'     => [],
+                'hostids'    => $hostids,
+                'selectTags' => ['tag', 'value'],
+                'limit'      => 5000,
+            ]);
 
-                if ($search === ''
-                    || stripos($t['tag'], $search) !== false
-                    || stripos($t['value'], $search) !== false
-                ) {
-                    $tags[] = ['name' => $t['tag'], 'value' => $t['value']];
+            if (is_array($items)) {
+                foreach ($items as $item) {
+                    foreach (($item['tags'] ?? []) as $t) {
+                        $key = $t['tag'] . '=' . $t['value'];
+                        if (isset($seen[$key])) continue;
+                        $seen[$key] = true;
+
+                        if ($search === ''
+                            || stripos($t['tag'], $search) !== false
+                            || stripos($t['value'], $search) !== false
+                        ) {
+                            $tags[] = ['name' => $t['tag'], 'value' => $t['value']];
+                        }
+                    }
                 }
             }
         }
@@ -169,6 +204,25 @@ class CMaintenancePlusService {
         usort($tags, static fn($a, $b) => strcmp($a['name'], $b['name']));
 
         return array_slice($tags, 0, $limit);
+    }
+
+    // ── Helpers ──────────────────────────────────────────────────────────────
+
+    /**
+     * Normalize filter_tags from form input to Zabbix API format.
+     */
+    public function normalizeFilterTags(array $raw): array {
+        $tags = [];
+        foreach ($raw as $tag) {
+            if (!empty($tag['name'])) {
+                $tags[] = [
+                    'name'     => $tag['name'],
+                    'value'    => $tag['value'] ?? '',
+                    'operator' => (int) ($tag['operator'] ?? TAG_OPERATOR_EQUAL),
+                ];
+            }
+        }
+        return $tags;
     }
 
     // ── Payload builder ───────────────────────────────────────────────────────

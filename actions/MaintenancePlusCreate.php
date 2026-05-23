@@ -42,15 +42,15 @@ class MaintenancePlusCreate extends CController {
         // POST — persist
         try {
             $svc  = CMaintenancePlusService::getInstance();
-            $data = $this->collectFormData();
+            $data = $this->collectFormData($svc);
 
-            // Resolve tag-matched hosts
-            $filterTags = $data['filter_tags'] ?? [];
+            // Tags filter WITHIN manual hosts (intersection), not union
+            $filterTags = $svc->normalizeFilterTags($data['filter_tags'] ?? []);
             if (!empty($filterTags)) {
-                $evalType   = ($data['tags_evaltype'] == 2) ? 'or' : 'and';
-                $tagHosts   = $svc->getHostsByTags($filterTags, $evalType);
-                $tagHostIds = array_column($tagHosts, 'hostid');
-                $data['hostids'] = array_unique(array_merge($data['hostids'] ?? [], $tagHostIds));
+                $evalType   = ($data['tags_evaltype'] === 2) ? 'or' : 'and';
+                $manualIds  = $data['hostids'] ?? [];
+                $tagHosts   = $svc->getHostsByTags($filterTags, $evalType, $manualIds ?: null);
+                $data['hostids'] = array_map('strval', array_column($tagHosts, 'hostid'));
             }
 
             $result = $svc->createMaintenance($data);
@@ -78,7 +78,7 @@ class MaintenancePlusCreate extends CController {
         }
     }
 
-    private function collectFormData(): array {
+    private function collectFormData(CMaintenancePlusService $svc): array {
         $userData = CWebUser::$data;
         $autoName = (bool) $this->getInput('auto_name', 1);
         $fullName = trim(($userData['name'] ?? '') . ' ' . ($userData['surname'] ?? ''));
@@ -101,22 +101,8 @@ class MaintenancePlusCreate extends CController {
             'tags_evaltype'    => (int) $this->getInput('tags_evaltype', MAINTENANCE_TAG_EVAL_TYPE_AND_OR),
             'hostids'          => $this->getInput('hostids', []),
             'groupids'         => $this->getInput('groupids', []),
-            'filter_tags'      => $this->normalizeFilterTags($this->getInput('filter_tags', [])),
+            'filter_tags'      => $svc->normalizeFilterTags($this->getInput('filter_tags', [])),
         ];
-    }
-
-    private function normalizeFilterTags(array $raw): array {
-        $tags = [];
-        foreach ($raw as $tag) {
-            if (!empty($tag['name'])) {
-                $tags[] = [
-                    'name'     => $tag['name'],
-                    'value'    => $tag['value'] ?? '',
-                    'operator' => (int) ($tag['operator'] ?? TAG_OPERATOR_EQUAL),
-                ];
-            }
-        }
-        return $tags;
     }
 
     private function defaultFormData(): array {

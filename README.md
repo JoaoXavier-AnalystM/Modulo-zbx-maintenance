@@ -26,7 +26,9 @@ Gerenciamento moderno de manutenções com seleção de hosts por tags, template
 ```bash
 # 1. Copiar módulo (pasta deve ter o mesmo nome do "id" no manifest)
 cp -r zbx-manutencao-v1 /usr/share/zabbix/ui/modules/maintenance_plus
-
+chown -R www-data:www-data /usr/share/zabbix/ui/modules/maintenance_plus
+chmod -R 755 /usr/share/zabbix/ui/modules/maintenance_plus
+systemctl restart php8.3-fpm
 # 2. Permissões
 chown -R www-data:www-data /usr/share/zabbix/ui/modules/maintenance_plus
 chmod -R 755 /usr/share/zabbix/ui/modules/maintenance_plus
@@ -37,7 +39,7 @@ systemctl restart php8.3-fpm
 
 No Zabbix: **Administration → General → Modules → Scan directory → Enable**.
 
-Acesso em **Monitoring → Maintenance Plus** ou `zabbix.php?action=maintenance.plus.dashboard`.
+Acesso em **Monitoring → Maintenance Plus** ou `https://zabbix-hl.joaoxavier.app.br/.
 
 ## Estrutura
 

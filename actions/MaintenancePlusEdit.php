@@ -19,7 +19,14 @@ class MaintenancePlusEdit extends CController {
     }
 
     protected function checkInput(): bool {
-        return true;
+        $fields = [
+            'maintenanceid' => 'required|db maintenances.maintenanceid',
+        ];
+        $ret = $this->validateInput($fields);
+        if (!$ret) {
+            $this->setResponse(new CControllerResponseFatal());
+        }
+        return $ret;
     }
 
     protected function checkPermissions(): bool {
@@ -49,13 +56,13 @@ class MaintenancePlusEdit extends CController {
 
         // POST — update
         try {
-            $filterTags = $this->normalizeFilterTags($this->getInput('filter_tags', []));
+            $filterTags = $svc->normalizeFilterTags($this->getInput('filter_tags', []));
             $hostids    = $this->getInput('hostids', []);
 
             if (!empty($filterTags)) {
-                $evalType   = ($this->getInput('tags_evaltype', '0') == 2) ? 'or' : 'and';
-                $tagHosts   = $svc->getHostsByTags($filterTags, $evalType);
-                $hostids    = array_unique(array_merge($hostids, array_column($tagHosts, 'hostid')));
+                $evalType   = ((int) $this->getInput('tags_evaltype', '0') === 2) ? 'or' : 'and';
+                $tagHosts   = $svc->getHostsByTags($filterTags, $evalType, $hostids ?: null);
+                $hostids    = array_map('strval', array_column($tagHosts, 'hostid'));
             }
 
             $data = [
@@ -114,17 +121,4 @@ class MaintenancePlusEdit extends CController {
         ];
     }
 
-    private function normalizeFilterTags(array $raw): array {
-        $tags = [];
-        foreach ($raw as $tag) {
-            if (!empty($tag['name'])) {
-                $tags[] = [
-                    'name'     => $tag['name'],
-                    'value'    => $tag['value'] ?? '',
-                    'operator' => (int) ($tag['operator'] ?? TAG_OPERATOR_EQUAL),
-                ];
-            }
-        }
-        return $tags;
-    }
 }

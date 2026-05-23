@@ -24,15 +24,20 @@ $userName = htmlspecialchars($m['user_name'] ?? '', ENT_QUOTES, 'UTF-8');
     <!-- Breadcrumb -->
     <nav class="mp-breadcrumb">
         <a href="zabbix.php?action=maintenance.plus.dashboard"><?= _('Maintenance Plus') ?></a>
-        <span class="mp-breadcrumb-sep">›</span>
+        <span class="mp-breadcrumb-sep">/</span>
         <a href="zabbix.php?action=maintenance.plus.list"><?= _('Maintenances') ?></a>
-        <span class="mp-breadcrumb-sep">›</span>
+        <span class="mp-breadcrumb-sep">/</span>
         <span><?= $pageTitle ?></span>
     </nav>
 
     <div class="mp-page-header">
         <div class="mp-page-title">
             <h1><?= $pageTitle ?></h1>
+        </div>
+        <div class="mp-page-actions">
+            <a href="zabbix.php?action=maintenance.plus.list" class="mp-btn mp-btn-secondary mp-btn-sm">
+                &#x2190; <?= _('Back to list') ?>
+            </a>
         </div>
     </div>
 
@@ -79,6 +84,7 @@ $userName = htmlspecialchars($m['user_name'] ?? '', ENT_QUOTES, 'UTF-8');
                                 <span class="mp-toggle-track" aria-hidden="true"></span>
                                 <?= _('Generate name automatically') ?>
                             </label>
+                            <span class="mp-field-hint mp-hint-inline" id="mp-auto-name-hint"><?= _('Auto-name active — toggle off to edit manually') ?></span>
                         </div>
                         <?php endif; ?>
 
@@ -192,126 +198,132 @@ $userName = htmlspecialchars($m['user_name'] ?? '', ENT_QUOTES, 'UTF-8');
                     </div>
                 </section>
 
-                <!-- Card: Tag-based Host Selection ────────────────────── -->
-                <section class="mp-card mp-form-card mp-card-tags" aria-label="<?= _('Tag-based host selection') ?>">
-                    <div class="mp-card-header">
-                        <h2>
-                            <?= _('Host Selection via Tags') ?>
-                            <span class="mp-badge mp-badge-recommended"><?= _('Recommended') ?></span>
-                        </h2>
-                        <p class="mp-card-subtitle"><?= _('Hosts matching the tags below will be included automatically. No manual picking needed.') ?></p>
-                    </div>
-                    <div class="mp-card-body">
+                <!-- ── Host selection: side-by-side grid ─────────────── -->
+                <div class="mp-host-grid">
 
-                        <div class="mp-field">
-                            <label class="mp-label"><?= _('Tag evaluation') ?></label>
-                            <div class="mp-radio-group mp-radio-inline">
-                                <label class="mp-radio-label">
-                                    <input type="radio" name="tags_evaltype" value="0" id="mp-eval-and"
-                                        <?= ((int)$m['tags_evaltype'] !== 2) ? 'checked' : '' ?>>
-                                    <?= _('AND — all tags must match') ?>
-                                </label>
-                                <label class="mp-radio-label">
-                                    <input type="radio" name="tags_evaltype" value="2" id="mp-eval-or"
-                                        <?= ((int)$m['tags_evaltype'] === 2) ? 'checked' : '' ?>>
-                                    <?= _('OR — any tag matches') ?>
-                                </label>
-                            </div>
+                    <!-- Card: Host Selection (Primary) ──────────────── -->
+                    <section class="mp-card mp-form-card" id="mp-manual-card">
+                        <div class="mp-card-header">
+                            <h2>
+                                <?= _('Host Selection') ?>
+                                <span class="mp-badge mp-badge-recommended"><?= _('Primary') ?></span>
+                            </h2>
+                            <p class="mp-card-subtitle"><?= _('Search and select hosts for this maintenance. After selecting, tags from those hosts become available in the next step.') ?></p>
                         </div>
+                        <div class="mp-card-body">
 
-                        <div class="mp-tag-builder" id="mp-tag-builder">
-                            <div class="mp-tag-search-row">
-                                <div class="mp-tag-autocomplete-wrapper">
-                                    <input
-                                        type="text"
-                                        id="mp-tag-search"
-                                        class="mp-input mp-tag-search-input"
-                                        placeholder="<?= _('Search tags… e.g. Environment=Production') ?>"
-                                        autocomplete="off"
-                                        aria-autocomplete="list"
-                                        aria-haspopup="listbox"
-                                        aria-controls="mp-tag-suggestions"
-                                    >
-                                    <div
-                                        id="mp-tag-suggestions"
-                                        class="mp-autocomplete-dropdown"
-                                        role="listbox"
-                                        aria-label="<?= _('Tag suggestions') ?>"
-                                        hidden
-                                    ></div>
+                            <div class="mp-field">
+                                <label class="mp-label"><?= _('Hosts') ?></label>
+                                <div class="mp-multiselect-wrapper" id="mp-hosts-ms">
+                                    <div class="mp-multiselect-input-wrap">
+                                    <input type="text" class="mp-input mp-multiselect-search" placeholder="<?= _('Search hosts…') ?>" autocomplete="off">
+                                    <div class="mp-multiselect-dropdown" hidden></div>
+                                    </div>
+                                    <div class="mp-multiselect-chips" id="mp-host-chips">
+                                        <?php foreach (($m['hosts'] ?? []) as $host): ?>
+                                        <span class="mp-chip" data-id="<?= htmlspecialchars($host['hostid'], ENT_QUOTES) ?>">
+                                            <?= htmlspecialchars($host['name'], ENT_QUOTES, 'UTF-8') ?>
+                                            <button type="button" class="mp-chip-remove" aria-label="<?= _('Remove') ?>">×</button>
+                                            <input type="hidden" name="hostids[]" value="<?= htmlspecialchars($host['hostid'], ENT_QUOTES) ?>">
+                                        </span>
+                                        <?php endforeach; ?>
+                                    </div>
                                 </div>
-                                <button type="button" id="mp-add-tag-manual" class="mp-btn mp-btn-secondary mp-btn-sm">
-                                    <?= _('Add') ?>
-                                </button>
                             </div>
 
-                            <div
-                                id="mp-active-tags"
-                                class="mp-active-tags-area"
-                                role="list"
-                                aria-label="<?= _('Active tag filters') ?>"
-                            >
-                                <?php foreach (($m['tags'] ?? []) as $i => $tag): ?>
+                        </div>
+                    </section>
+
+                    <!-- Card: Tags (scoped to selected hosts) ────── -->
+                    <section class="mp-card mp-form-card mp-card-tags" aria-label="<?= _('Tag-based host filter') ?>">
+                        <div class="mp-card-header">
+                            <h2>
+                                <?= _('Tags') ?>
+                                <span class="mp-optional-label">(<?= _('optional') ?>)</span>
+                            </h2>
+                            <p class="mp-card-subtitle"><?= _('Search and select tags from the chosen hosts’ items. Focus the field to see all available tags.') ?></p>
+                        </div>
+                        <div class="mp-card-body">
+
+                            <div class="mp-field">
+                                <label class="mp-label"><?= _('Tag match logic') ?></label>
+                                <div class="mp-radio-group mp-radio-inline">
+                                    <label class="mp-radio-label">
+                                        <input type="radio" name="tags_evaltype" value="0" id="mp-eval-and"
+                                            <?= ((int)$m['tags_evaltype'] !== 2) ? 'checked' : '' ?>>
+                                        <?= _('AND — host must have all selected tags') ?>
+                                    </label>
+                                    <label class="mp-radio-label">
+                                        <input type="radio" name="tags_evaltype" value="2" id="mp-eval-or"
+                                            <?= ((int)$m['tags_evaltype'] === 2) ? 'checked' : '' ?>>
+                                        <?= _('OR — host must have at least one tag') ?>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="mp-tag-builder" id="mp-tag-builder">
+                                <div class="mp-tag-search-row">
+                                    <div class="mp-tag-autocomplete-wrapper">
+                                        <input
+                                            type="text"
+                                            id="mp-tag-search"
+                                            class="mp-input mp-tag-search-input"
+                                            placeholder="<?= _('Search tags… e.g. Environment=Production') ?>"
+                                            autocomplete="off"
+                                            aria-autocomplete="list"
+                                            aria-haspopup="listbox"
+                                            aria-controls="mp-tag-suggestions"
+                                        >
+                                        <div
+                                            id="mp-tag-suggestions"
+                                            class="mp-autocomplete-dropdown"
+                                            role="listbox"
+                                            aria-label="<?= _('Tag suggestions') ?>"
+                                            hidden
+                                        ></div>
+                                    </div>
+                                    <button type="button" id="mp-add-tag-manual" class="mp-btn mp-btn-secondary mp-btn-sm">
+                                        <?= _('Add') ?>
+                                    </button>
+                                </div>
+
                                 <div
-                                    class="mp-tag-chip"
-                                    data-name="<?= htmlspecialchars($tag['name'], ENT_QUOTES, 'UTF-8') ?>"
-                                    data-value="<?= htmlspecialchars($tag['value'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
-                                    data-operator="<?= (int)($tag['operator'] ?? 0) ?>"
-                                    role="listitem"
+                                    id="mp-active-tags"
+                                    class="mp-active-tags-area"
+                                    role="list"
+                                    aria-label="<?= _('Active tag filters') ?>"
                                 >
-                                    <span class="mp-tag-chip-label">
-                                        <strong><?= htmlspecialchars($tag['name'], ENT_QUOTES, 'UTF-8') ?></strong>
-                                        <?php if (!empty($tag['value'])): ?>
-                                        <span class="mp-tag-op">=</span>
-                                        <span class="mp-tag-value"><?= htmlspecialchars($tag['value'], ENT_QUOTES, 'UTF-8') ?></span>
-                                        <?php endif; ?>
-                                    </span>
-                                    <button type="button" class="mp-tag-chip-remove" aria-label="<?= _('Remove tag') ?>">×</button>
-                                    <input type="hidden" name="filter_tags[<?= $i ?>][name]" value="<?= htmlspecialchars($tag['name'], ENT_QUOTES, 'UTF-8') ?>">
-                                    <input type="hidden" name="filter_tags[<?= $i ?>][value]" value="<?= htmlspecialchars($tag['value'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
-                                    <input type="hidden" name="filter_tags[<?= $i ?>][operator]" value="<?= (int)($tag['operator'] ?? 0) ?>">
-                                </div>
-                                <?php endforeach; ?>
-                                <p id="mp-tags-placeholder" class="mp-tags-placeholder <?= !empty($m['tags']) ? 'hidden' : '' ?>">
-                                    <?= _('No tags selected yet. Type above to search.') ?>
-                                </p>
-                            </div>
-                        </div>
-
-                    </div>
-                </section>
-
-                <!-- Card: Manual host/group (collapsible) ─────────────── -->
-                <section class="mp-card mp-form-card mp-card-collapsible" id="mp-manual-card">
-                    <div class="mp-card-header mp-card-toggle" data-target="mp-manual-body">
-                        <h2>
-                            <?= _('Manual Host / Group Selection') ?>
-                            <span class="mp-optional-label">(<?= _('optional') ?>)</span>
-                        </h2>
-                        <span class="mp-collapse-icon" aria-hidden="true">›</span>
-                    </div>
-                    <div class="mp-card-body" id="mp-manual-body" hidden>
-                        <p class="mp-field-hint"><?= _('Add specific hosts or groups in addition to tag-matched ones.') ?></p>
-
-                        <div class="mp-field">
-                            <label class="mp-label"><?= _('Hosts') ?></label>
-                            <div class="mp-multiselect-wrapper" id="mp-hosts-ms">
-                                <input type="text" class="mp-input mp-multiselect-search" placeholder="<?= _('Search hosts…') ?>" autocomplete="off">
-                                <div class="mp-multiselect-dropdown" hidden></div>
-                                <div class="mp-multiselect-chips" id="mp-host-chips">
-                                    <?php foreach (($m['hosts'] ?? []) as $host): ?>
-                                    <span class="mp-chip" data-id="<?= htmlspecialchars($host['hostid'], ENT_QUOTES) ?>">
-                                        <?= htmlspecialchars($host['name'], ENT_QUOTES, 'UTF-8') ?>
-                                        <button type="button" class="mp-chip-remove" aria-label="<?= _('Remove') ?>">×</button>
-                                        <input type="hidden" name="hostids[]" value="<?= htmlspecialchars($host['hostid'], ENT_QUOTES) ?>">
-                                    </span>
+                                    <?php foreach (($m['tags'] ?? []) as $i => $tag): ?>
+                                    <div
+                                        class="mp-tag-chip"
+                                        data-name="<?= htmlspecialchars($tag['name'], ENT_QUOTES, 'UTF-8') ?>"
+                                        data-value="<?= htmlspecialchars($tag['value'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
+                                        data-operator="<?= (int)($tag['operator'] ?? 0) ?>"
+                                        role="listitem"
+                                    >
+                                        <span class="mp-tag-chip-label">
+                                            <strong><?= htmlspecialchars($tag['name'], ENT_QUOTES, 'UTF-8') ?></strong>
+                                            <?php if (!empty($tag['value'])): ?>
+                                            <span class="mp-tag-op">=</span>
+                                            <span class="mp-tag-value"><?= htmlspecialchars($tag['value'], ENT_QUOTES, 'UTF-8') ?></span>
+                                            <?php endif; ?>
+                                        </span>
+                                        <button type="button" class="mp-tag-chip-remove" aria-label="<?= _('Remove tag') ?>">×</button>
+                                        <input type="hidden" name="filter_tags[<?= $i ?>][name]" value="<?= htmlspecialchars($tag['name'], ENT_QUOTES, 'UTF-8') ?>">
+                                        <input type="hidden" name="filter_tags[<?= $i ?>][value]" value="<?= htmlspecialchars($tag['value'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
+                                        <input type="hidden" name="filter_tags[<?= $i ?>][operator]" value="<?= (int)($tag['operator'] ?? 0) ?>">
+                                    </div>
                                     <?php endforeach; ?>
+                                    <p id="mp-tags-placeholder" class="mp-tags-placeholder <?= !empty($m['tags']) ? 'hidden' : '' ?>">
+                                        <?= _('No tags yet. Select hosts first, then focus the search field to see available tags from their items.') ?>
+                                    </p>
                                 </div>
                             </div>
-                        </div>
 
-                    </div>
-                </section>
+                        </div>
+                    </section>
+
+                </div><!-- .mp-host-grid -->
 
                 <!-- Form actions ─────────────────────────────────────── -->
                 <div class="mp-form-actions">
@@ -319,7 +331,8 @@ $userName = htmlspecialchars($m['user_name'] ?? '', ENT_QUOTES, 'UTF-8');
                     <a href="zabbix.php?action=maintenance.plus.list" class="mp-btn mp-btn-secondary mp-btn-lg"><?= _('Cancel') ?></a>
                     <?php if (!$isEdit): ?>
                     <button type="button" id="mp-save-template" class="mp-btn mp-btn-secondary mp-btn-lg">
-                        &#x1F4BE; <?= _('Save as Template') ?>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                        <?= _('Save as Template') ?>
                     </button>
                     <?php endif; ?>
                 </div>
@@ -348,13 +361,16 @@ $userName = htmlspecialchars($m['user_name'] ?? '', ENT_QUOTES, 'UTF-8');
                     <span id="mp-preview-count" class="mp-preview-count-badge" aria-label="<?= _('Matched host count') ?>">0</span>
                 </div>
                 <div class="mp-card-body" id="mp-preview-body">
-                    <div class="mp-preview-empty">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="mp-preview-empty-icon" aria-hidden="true">
-                            <rect x="2" y="3" width="20" height="14" rx="2"/>
-                            <line x1="8" y1="21" x2="16" y2="21"/>
-                            <line x1="12" y1="17" x2="12" y2="21"/>
-                        </svg>
-                        <p><?= _('Add tags above to preview affected hosts.') ?></p>
+                    <div class="mp-empty-state">
+                        <div class="mp-empty-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                                <rect x="2" y="3" width="20" height="14" rx="2"/>
+                                <line x1="8" y1="21" x2="16" y2="21"/>
+                                <line x1="12" y1="17" x2="12" y2="21"/>
+                            </svg>
+                        </div>
+                        <h3><?= _('Affected Hosts Preview') ?></h3>
+                        <p><?= _('Add tags above to preview which hosts will be affected by this maintenance.') ?></p>
                     </div>
                 </div>
             </div>

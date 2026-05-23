@@ -29,3 +29,7 @@ cache/
 .agents/
 .skill/
 skills-lock.json
+memory/
+
+# Debug / bug reports (screenshots, nao sao codigo fonte)
+bugs/

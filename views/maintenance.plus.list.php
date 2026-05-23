@@ -14,6 +14,13 @@ $jsConfig = json_encode([
 
 <div class="mp-page mp-list-page">
 
+    <!-- Breadcrumb -->
+    <nav class="mp-breadcrumb">
+        <a href="zabbix.php?action=maintenance.plus.dashboard"><?= _('Maintenance Plus') ?></a>
+        <span class="mp-breadcrumb-sep">/</span>
+        <span><?= _('Maintenances') ?></span>
+    </nav>
+
     <div class="mp-page-header">
         <div class="mp-page-title">
             <h1><?= _('Maintenances') ?></h1>
@@ -63,7 +70,8 @@ $jsConfig = json_encode([
         </button>
         <?php endif; ?>
         <a href="zabbix.php?action=maintenance.plus.export" class="mp-btn mp-btn-secondary mp-btn-sm" title="<?= _('Export as CSV') ?>">
-            &#x21E9; <?= _('Export') ?>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <?= _('Export') ?>
         </a>
     </div>
 
@@ -92,9 +100,9 @@ $jsConfig = json_encode([
                                 <span class="mp-sort-arrow"><?= $data['sort'] === 'name' ? ($data['sortorder'] === 'ASC' ? '↑' : '↓') : '↕' ?></span>
                             </a>
                         </th>
-                        <th><?= _('Creator') ?></th>
-                        <th><?= _('Duration') ?></th>
-                        <th><?= _('Type') ?></th>
+                        <th class="mp-th-creator"><?= _('Creator') ?></th>
+                        <th class="mp-th-duration"><?= _('Duration') ?></th>
+                        <th class="mp-th-type"><?= _('Type') ?></th>
                         <th>
                             <a href="<?= $sortHref('active_since') ?>" class="mp-sort-link <?= $data['sort'] === 'active_since' ? 'active' : '' ?>">
                                 <?= _('Start') ?>
@@ -107,7 +115,7 @@ $jsConfig = json_encode([
                                 <span class="mp-sort-arrow"><?= $data['sort'] === 'active_till' ? ($data['sortorder'] === 'ASC' ? '↑' : '↓') : '↕' ?></span>
                             </a>
                         </th>
-                        <th><?= _('Tags') ?></th>
+                        <th class="mp-th-tags"><?= _('Tags') ?></th>
                         <th><?= _('Hosts') ?></th>
                         <?php if ($data['can_manage']): ?>
                         <th><?= _('Actions') ?></th>
@@ -118,7 +126,13 @@ $jsConfig = json_encode([
                 <?php if (empty($data['maintenances'])): ?>
                     <tr>
                         <td colspan="<?= $data['can_manage'] ? 11 : 9 ?>" class="mp-td-empty">
-                            <?= _('No maintenances found.') ?>
+                            <div class="mp-empty-state">
+                                <div class="mp-empty-icon">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                                </div>
+                                <h3><?= _('No maintenances found') ?></h3>
+                                <p><?= _('Try adjusting your search or status filter.') ?></p>
+                            </div>
                         </td>
                     </tr>
                 <?php else: ?>
@@ -175,7 +189,7 @@ $jsConfig = json_encode([
                         <td class="mp-td-date"><?= date('d/m/Y H:i', (int)$m['active_till']) ?></td>
                         <td class="mp-td-tags">
                             <?php if (!empty($m['tags_formatted'])): ?>
-                            <div class="mp-tags-inline">
+                            <div class="mp-tags-inline" title="<?= htmlspecialchars(implode(', ', array_map(fn($t) => $t['name'] . (!empty($t['value']) ? '=' . $t['value'] : ''), $m['tags_formatted'])), ENT_QUOTES, 'UTF-8') ?>">
                                 <?php foreach (array_slice($m['tags_formatted'], 0, 3) as $tag): ?>
                                 <span class="mp-mini-badge"><?= htmlspecialchars($tag['name'], ENT_QUOTES, 'UTF-8') ?><?= !empty($tag['value']) ? '=' . htmlspecialchars($tag['value'], ENT_QUOTES, 'UTF-8') : '' ?></span>
                                 <?php endforeach; ?>
@@ -228,13 +242,14 @@ $jsConfig = json_encode([
             </table>
         </div>
 
-        <?php if ($data['has_more']): ?>
         <div class="mp-load-more-bar">
+            <span class="mp-page-indicator"><?= sprintf(_('Page %d'), (int)$data['page']) ?></span>
+            <?php if ($data['has_more']): ?>
             <button class="mp-btn mp-btn-secondary" id="mp-load-more" data-page="<?= (int)$data['page'] + 1 ?>">
                 <?= _('Load more') ?>
             </button>
+            <?php endif; ?>
         </div>
-        <?php endif; ?>
     </div>
 
 </div><!-- .mp-list-page -->

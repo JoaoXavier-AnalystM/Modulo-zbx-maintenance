@@ -10,6 +10,11 @@
 
 <div class="mp-page mp-dashboard">
 
+    <!-- Breadcrumb -->
+    <nav class="mp-breadcrumb">
+        <span><?= _('Maintenance Plus') ?></span>
+    </nav>
+
     <div class="mp-page-header">
         <div class="mp-page-title">
             <h1><?= _('Maintenance Plus') ?></h1>
@@ -104,7 +109,7 @@
                 <h2><?= _('Maintenance Calendar') ?></h2>
                 <div class="mp-calendar-nav" role="group" aria-label="<?= _('Calendar navigation') ?>">
                     <button id="mp-cal-prev" class="mp-btn-icon-only" aria-label="<?= _('Previous month') ?>">&#8249;</button>
-                    <span id="mp-cal-month-label" aria-live="polite"></span>
+                    <span id="mp-cal-month-label" aria-live="polite"><?= date('F Y') ?></span>
                     <button id="mp-cal-next" class="mp-btn-icon-only" aria-label="<?= _('Next month') ?>">&#8250;</button>
                 </div>
             </div>
@@ -127,8 +132,11 @@
             <div class="mp-card-body">
                 <?php if (empty($data['active_list'])): ?>
                 <div class="mp-empty-state">
-                    <span class="mp-empty-icon" aria-hidden="true">&#10003;</span>
-                    <p><?= _('No active maintenances.') ?></p>
+                    <div class="mp-empty-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    </div>
+                    <h3><?= _('No active maintenances') ?></h3>
+                    <p><?= _('Create a new maintenance to get started.') ?></p>
                 </div>
                 <?php else: ?>
                 <ul class="mp-maintenance-list">
@@ -141,12 +149,17 @@
                             </a>
                         </div>
                         <div class="mp-mi-meta">
-                            <span><?= date('d/m H:i', (int)$m['active_since']) ?> → <?= date('d/m H:i', (int)$m['active_till']) ?></span>
+                            <span><?= date('d/m/Y H:i', (int)$m['active_since']) ?> → <?= date('d/m/Y H:i', (int)$m['active_till']) ?></span>
                             <span><?= count($m['hosts'] ?? []) ?> <?= _('hosts') ?></span>
                         </div>
                     </li>
                     <?php endforeach; ?>
                 </ul>
+                <?php if ($data['active_count'] > 5): ?>
+                <div class="mp-card-footer-link">
+                    <a href="zabbix.php?action=maintenance.plus.list&status=active"><?= _('View all active') ?> →</a>
+                </div>
+                <?php endif; ?>
                 <?php endif; ?>
             </div>
         </div>
@@ -162,7 +175,11 @@
             <div class="mp-card-body">
                 <?php if (empty($data['upcoming_list'])): ?>
                 <div class="mp-empty-state">
-                    <p><?= _('No upcoming maintenances.') ?></p>
+                    <div class="mp-empty-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>
+                    </div>
+                    <h3><?= _('No upcoming maintenances') ?></h3>
+                    <p><?= _('All maintenances are either active or expired.') ?></p>
                 </div>
                 <?php else: ?>
                 <ul class="mp-maintenance-list">
@@ -180,6 +197,11 @@
                     </li>
                     <?php endforeach; ?>
                 </ul>
+                <?php if ($data['upcoming_count'] > 5): ?>
+                <div class="mp-card-footer-link">
+                    <a href="zabbix.php?action=maintenance.plus.list&status=upcoming"><?= _('View all upcoming') ?> →</a>
+                </div>
+                <?php endif; ?>
                 <?php endif; ?>
             </div>
         </div>

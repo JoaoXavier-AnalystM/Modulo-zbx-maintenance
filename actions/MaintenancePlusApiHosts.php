@@ -43,21 +43,23 @@ class MaintenancePlusApiHosts extends CController {
         $search = $this->getInput('search', '');
         $limit  = (int) $this->getInput('limit', 100);
 
-        $params = [
+        $result = API::Host()->get([
             'output'          => ['hostid', 'name', 'status'],
             'selectGroups'    => ['groupid', 'name'],
             'monitored_hosts' => true,
             'sortfield'       => 'name',
-            'limit'           => $limit,
-        ];
+        ]);
+        $hosts = is_array($result) ? $result : [];
 
+        // PHP-side filtering — Zabbix API 'search' param unreliable in some versions
         if ($search !== '') {
-            $params['search']                 = ['name' => $search];
-            $params['searchWildcardsEnabled'] = true;
+            $searchLower = strtolower($search);
+            $hosts = array_values(array_filter($hosts, static fn($h) =>
+                strpos(strtolower($h['name']), $searchLower) !== false
+            ));
         }
 
-        $result = API::Host()->get($params);
-        $hosts  = is_array($result) ? $result : [];
+        $hosts = array_slice($hosts, 0, $limit);
 
         $this->setResponse(new CControllerResponseData([
             'main_block' => json_encode([

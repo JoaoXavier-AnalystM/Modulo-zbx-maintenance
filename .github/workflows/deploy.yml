@@ -1,0 +1,66 @@
+name: Deploy Módulo Zabbix
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Conectar ao Tailscale
+        uses: tailscale/github-action@v2
+        with:
+          authkey: ${{ secrets.TS_OAUTH_CLIENT_SECRET }}
+
+      - name: Configurar chave SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Backup e Deploy
+        run: |
+          rsync -avz --delete ./ \
+            -e "ssh -i ~/.ssh/id_rsa" \
+            ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/tmp/maintenance_plus_new/
+
+          ssh -i ~/.ssh/id_rsa ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
+            MODULE_DIR="/usr/share/zabbix/ui/modules/maintenance_plus"
+            BACKUP_DIR="/usr/share/zabbix/ui/modules/backups"
+            DATE=$(date +%Y%m%d_%H%M%S)
+
+            sudo mkdir -p "$BACKUP_DIR"
+
+            # Backup do módulo atual
+            if [ -d "$MODULE_DIR" ]; then
+              sudo cp -r "$MODULE_DIR" "$BACKUP_DIR/maintenance_plus_$DATE"
+              echo "✅ Backup criado: maintenance_plus_$DATE"
+            else
+              echo "⚠️  Módulo atual não encontrado, pulando backup"
+            fi
+
+            # Substitui pelo novo
+            sudo rm -rf "$MODULE_DIR"
+            sudo mv /tmp/maintenance_plus_new "$MODULE_DIR"
+
+            # Corrige permissões
+            sudo chown -R www-data:www-data "$MODULE_DIR"
+            sudo chmod -R 755 "$MODULE_DIR"
+
+            # Limpa temporários
+            rm -rf /tmp/maintenance_plus_new
+
+            # Mantém apenas os 5 backups mais recentes
+            echo "🧹 Limpando backups antigos..."
+            ls -dt "$BACKUP_DIR"/maintenance_plus_* | tail -n +6 | xargs -r sudo rm -rf
+            echo "✅ Backups mantidos: $(ls "$BACKUP_DIR" | wc -l)"
+
+            echo "✅ Deploy concluído!"
+          EOF

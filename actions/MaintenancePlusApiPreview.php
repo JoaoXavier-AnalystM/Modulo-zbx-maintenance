@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Modules\MaintenancePlus\Actions;
 
+use API;
 use CController;
 use CControllerResponseData;
 use Modules\MaintenancePlus\Includes\CMaintenancePlusService;
 
 /**
- * AJAX endpoint: returns live preview of hosts matching the given tags.
- * Called on every tag change in the create/edit form.
+ * AJAX endpoint: returns live preview of hosts matching tags + manual selection.
  * Response: layout.json via main_block.
  */
 class MaintenancePlusApiPreview extends CController {
@@ -23,6 +23,7 @@ class MaintenancePlusApiPreview extends CController {
         $fields = [
             'tags'      => 'array',
             'eval_type' => 'in and,or',
+            'hostids'   => 'array',
         ];
 
         $ret = $this->validateInput($fields);
@@ -43,22 +44,26 @@ class MaintenancePlusApiPreview extends CController {
     protected function doAction(): void {
         $tags     = $this->getInput('tags', []);
         $evalType = $this->getInput('eval_type', 'and');
+        $hostids  = $this->getInput('hostids', []);
 
-        if (empty($tags)) {
-            $this->setResponse(new CControllerResponseData([
-                'main_block' => json_encode([
-                    'host_count'  => 0,
-                    'group_count' => 0,
-                    'hosts'       => [],
-                    'groups'      => [],
-                    'truncated'   => false,
-                ]),
-            ]));
-            return;
+        $svc = CMaintenancePlusService::getInstance();
+
+        // If tags provided, filter manual hosts by tags (intersection)
+        if (!empty($tags)) {
+            $hosts = $svc->getHostsByTags($tags, $evalType, $hostids ?: null);
+        } elseif (!empty($hostids)) {
+            // No tags — show manually selected hosts
+            $result = API::Host()->get([
+                'output'          => ['hostid', 'name', 'status'],
+                'selectGroups'    => ['groupid', 'name'],
+                'hostids'         => $hostids,
+                'monitored_hosts' => true,
+                'sortfield'       => 'name',
+            ]);
+            $hosts = is_array($result) ? $result : [];
+        } else {
+            $hosts = [];
         }
-
-        $svc   = CMaintenancePlusService::getInstance();
-        $hosts = $svc->getHostsByTags($tags, $evalType);
 
         // Deduplicate groups
         $groups = [];
